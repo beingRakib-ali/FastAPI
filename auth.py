@@ -72,7 +72,6 @@ def authentication_user(username: str, password: str, db: Session):
     return user
 
 
-# ✅ JWT Token Generator
 def create_access_token(username: str, id: int, expire_delta: timedelta):
     encode = {'sub': username, 'id': id}
     expires = datetime.utcnow() + expire_delta
