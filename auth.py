@@ -45,6 +45,8 @@ async def create_users(db:db_dependency,create_user_request:CreateUserRequest):
 
     db.add(create_user_model)
     db.commit()
+    db.refresh(create_user_model)
+    
 
 
 @router.post('/token', response_model=Token)
@@ -74,7 +76,26 @@ def authentication_user(username: str, password: str, db: Session):
 
 def create_access_token(username: str, id: int, expire_delta: timedelta):
     encode = {'sub': username, 'id': id}
-    expires = datetime.utcnow() + expire_delta
+    expires = datetime.now() + expire_delta
+
     encode.update({'exp': expires})
     encoded_jwt = jwt.encode(encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
+
+async def get_current_user(token: str = Depends(oauth2_bearer)):
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        username: str = payload.get('sub')
+        user_id: int = payload.get('id')
+        if username is None or user_id is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid authentication credentials"
+            )
+    except JWTError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid authentication credentials"
+        )
+    
+    return {'username': username, 'id': user_id}

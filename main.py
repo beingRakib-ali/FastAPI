@@ -5,6 +5,7 @@ import models
 from database import engin,sessionlocal
 from sqlalchemy.orm import Session
 import auth
+from auth import get_current_user
 
 app = FastAPI()
 app.include_router(auth.router)
@@ -34,11 +35,12 @@ def get_db():
         db.close()
 
 db_dependency = Annotated[Session,Depends(get_db)]
+db_dependency_user = Annotated[dict,Depends(get_current_user)]
 
 
 
 @app.get('/')
-async def user(db:db_dependency,user:None):
+async def user(db:db_dependency,user:db_dependency_user):
     if user is None:
         raise HTTPException(status_code=401,detail='Authentication Failed')
     return {"User": user}
