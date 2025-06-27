@@ -60,7 +60,7 @@ async def get_All_question(db:db_dependency):
 
 @app.get('/get_single_questions/{question_id}')
 
-async def get_question(question_id:int, db:db_dependency):
+async def get_question(question_id:int, db:db_dependency, user: db_dependency_user):
     result = db.query(models.Question).filter(models.Question.id==question_id).first()
     if not result:
         raise HTTPException(status_code=404,detail="Question not found")
@@ -68,7 +68,7 @@ async def get_question(question_id:int, db:db_dependency):
 
 
 @app.put('/questions/{question_id}')
-async def update_question(question_id: int, updated_data: QuestionBase, db: db_dependency):
+async def update_question(question_id: int, updated_data: QuestionBase, db: db_dependency,db_user: db_dependency_user):
     # Find the question
     question = db.query(models.Question).filter(models.Question.id == question_id).first()
     if not question:
